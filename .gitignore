@@ -1,0 +1,22 @@
+.vagrant
+*~
+*#
+.#*
+\#*#
+.*.sw[a-z]
+*.un~
+
+# Bundler
+Gemfile.lock
+bin/*
+.bundle/*
+
+# test kitchen
+.kitchen/
+.kitchen.local.yml
+test/fixtures/data_bags/secrets/fst_apt.json
+
+# Chef
+Berksfile.lock
+.zero-knife.rb
+Policyfile.lock.json
