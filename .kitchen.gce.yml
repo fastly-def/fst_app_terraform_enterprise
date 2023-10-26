@@ -20,7 +20,7 @@ transport:
   ssh_key: <%= ENV.fetch('GOOGLE_SSH_KEY', File.expand_path('~/.ssh/kitchen-gce')) %>
 
 platforms:
-  - name: ubuntu-16.04
+  - name: ubuntu-20.04
     driver:
       image_project: <%= ENV.fetch('GOOGLE_IMAGE_PROJECT', 'prodeng-robotic-cook') %>
-      image_family: <%= ENV.fetch('GOOGLE_IMAGE_FAMILY_XENIAL', 'fastly-rc-xenial') %>
+      image_family: <%= ENV.fetch('GOOGLE_IMAGE_FAMILY_XENIAL', 'fastly-rc-focal') %>
