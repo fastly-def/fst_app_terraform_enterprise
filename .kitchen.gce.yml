@@ -1,6 +1,34 @@
 ---
+# This file is centrally managed by Robotic Cook. Changes to this file in your local cookbook
+# will be overwritten. See https://github.com/fastly/robotic-cook-driver-configs
+<%
+image_project = ENV.fetch('GOOGLE_IMAGE_PROJECT', 'prodeng-robotic-cook')
+image_name = ENV.fetch('GOOGLE_IMAGE_NAME', nil)
+enabled_platforms = ENV.fetch('ROBOTIC_COOK_PLATFORMS', 'ubuntu-20.04').split(' ')
+supported_platforms = {
+  'ubuntu-16.04' => {
+    'google_image_family' => 'fastly-rc-xenial'
+  },
+  'ubuntu-18.04' => {
+    'google_image_family' => 'fastly-rc-bionic'
+  },
+  'ubuntu-20.04' => {
+    'google_image_family' => 'fastly-rc-focal'
+  },
+  'ubuntu-16.04-cinc15' => {
+    'google_image_family' => 'fastly-rc-xenial-cinc15'
+  },
+  'ubuntu-18.04-cinc15' => {
+    'google_image_family' => 'fastly-rc-bionic-cinc15'
+  },
+  'ubuntu-20.04-cinc15' => {
+    'google_image_family' => 'fastly-rc-focal-cinc15'
+  }
+}
+%>
 driver:
   name: gce
+  machine_type: <%= ENV.fetch('GOOGLE_MACHINE_TYPE', 'n1-standard-1') %>
   region: <%= ENV.fetch('GOOGLE_REGION', 'us-central1') %>
   project: <%= ENV.fetch('GOOGLE_PROJECT_ID', 'dev-fortress-92118') %>
   disks:
@@ -10,17 +38,27 @@ driver:
   tags: ['created-by-test-kitchen']
   use_private_ip: <%= ENV.fetch('GOOGLE_USE_PRIVATE_IP', false) %>
 
-provisioner:
-  chef_omnibus_root: /opt/chef
-  product_name: chef
-  install_strategy: skip
-
 transport:
+  name: <%= ENV.fetch('KITCHEN_TRANSPORT', 'ssh') %>
   username: <%= ENV.fetch('GOOGLE_SSH_USERNAME', ENV['USER']) %>
   ssh_key: <%= ENV.fetch('GOOGLE_SSH_KEY', File.expand_path('~/.ssh/kitchen-gce')) %>
 
 platforms:
-  - name: ubuntu-20.04
+<% enabled_platforms.each do |platform| %>
+  <% if supported_platforms.key?(platform) %>
+  - name: <%= platform %>
     driver:
-      image_project: <%= ENV.fetch('GOOGLE_IMAGE_PROJECT', 'prodeng-robotic-cook') %>
-      image_family: <%= ENV.fetch('GOOGLE_IMAGE_FAMILY_XENIAL', 'fastly-rc-focal') %>
+      image_project: <%= image_project %>
+      <% if image_name %>
+      image_name: <%= image_name %>
+      <% else %>
+      image_family: <%= supported_platforms[platform]['google_image_family'] %>
+      <% end %>
+    provisioner:
+      chef_omnibus_root: <%= platform.end_with?('cinc15') ? '/opt/cinc' : '/opt/chef' %>
+      product_name: chef
+      install_strategy: skip
+  <% else %>
+    <% raise SyntaxError, "platform: #{platform} is not supported. please use one of the following: #{supported_platforms.keys.sort.join(' ')}" %>
+  <% end %>
+<% end %>
