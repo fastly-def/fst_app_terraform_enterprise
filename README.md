@@ -1,6 +1,6 @@
 # fst_app_terraform_enterprise
 
-Recipes for managing Terraform Enterprise installation
+Recipes for managing Terraform Enterprise Clusters
 
 ## What does this cookbook do?
 
